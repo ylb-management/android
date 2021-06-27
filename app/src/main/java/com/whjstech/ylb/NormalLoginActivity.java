@@ -1,10 +1,14 @@
 package com.whjstech.ylb;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -14,6 +18,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -41,53 +47,51 @@ public class NormalLoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_normal_login);
 
-
         ArrayAdapter<ArrayList> adapterArea = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, listArea);
         ArrayAdapter<ArrayList> adapterStation = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, listStation);
         ArrayAdapter<ArrayList> adapterId = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, listId);
 
-        Intent intent = getIntent();
-        Bundle bundle = intent.getExtras();
-        String url = bundle.getString("url");
-        String user = bundle.getString("user");
-        String password = bundle.getString("password");
-
-
+        ProgressDialog progressDialog = new ProgressDialog(NormalLoginActivity.this);
+        progressDialog.setMessage("查找地区中...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
         //从MySQL获取地区名
         new Thread(() -> {
             Connection cn = null;
             Statement st = null;
             ResultSet rs = null;
             try {
-                cn = DriverManager.getConnection(url, user, password);
+                cn = DriverManager.getConnection(MainActivity.url, MainActivity.user, MainActivity.password);
                 st = cn.createStatement();
                 rs = st.executeQuery("select distinct 区名 from ylb_data");
                 while (rs.next()) {
                     listArea.add(rs.getString("区名"));
                 }
+                progressDialog.dismiss();
             } catch (SQLException e) {
                 e.printStackTrace();
                 System.out.println("查找区名失败");
-            }finally {
+                progressDialog.dismiss();
+            } finally {
                 //释放资源(按顺序从后到前:查询结果集-数据库操作对象-连接对象)
-                if (rs != null){
-                    try{
+                if (rs != null) {
+                    try {
                         rs.close();
-                    }catch(SQLException e){
+                    } catch (SQLException e) {
                         e.printStackTrace();
                     }
                 }
-                if (st != null){
-                    try{
+                if (st != null) {
+                    try {
                         st.close();
-                    }catch(SQLException e){
+                    } catch (SQLException e) {
                         e.printStackTrace();
                     }
                 }
-                if (cn != null){
-                    try{
+                if (cn != null) {
+                    try {
                         cn.close();
-                    }catch(SQLException e){
+                    } catch (SQLException e) {
                         e.printStackTrace();
                     }
                 }
@@ -110,7 +114,7 @@ public class NormalLoginActivity extends AppCompatActivity {
                     Statement st = null;
                     ResultSet rs = null;
                     try {
-                        cn = DriverManager.getConnection(url, user, password);
+                        cn = DriverManager.getConnection(MainActivity.url, MainActivity.user, MainActivity.password);
                         st = cn.createStatement();
                         rs = st.executeQuery("select distinct 站名 from ylb_data where 区名 = '" + Area + "'");
                         while (rs.next()) {
@@ -122,32 +126,32 @@ public class NormalLoginActivity extends AppCompatActivity {
                     } catch (SQLException e) {
                         e.printStackTrace();
                         System.out.println("查找站名失败");
-                    }finally {
+                    } finally {
                         //释放资源(按顺序从后到前:查询结果集-数据库操作对象-连接对象)
-                        if (rs != null){
-                            try{
+                        if (rs != null) {
+                            try {
                                 rs.close();
-                            }catch(SQLException e){
+                            } catch (SQLException e) {
                                 e.printStackTrace();
                             }
                         }
-                        if (st != null){
-                            try{
+                        if (st != null) {
+                            try {
                                 st.close();
-                            }catch(SQLException e){
+                            } catch (SQLException e) {
                                 e.printStackTrace();
                             }
                         }
-                        if (cn != null){
-                            try{
+                        if (cn != null) {
+                            try {
                                 cn.close();
-                            }catch(SQLException e){
+                            } catch (SQLException e) {
                                 e.printStackTrace();
                             }
                         }
                     }
                 }).start();
-                mHandler = new Handler(){
+                mHandler = new Handler() {
                     @Override
                     public void handleMessage(@NonNull Message msg) {
                         super.handleMessage(msg);
@@ -181,9 +185,9 @@ public class NormalLoginActivity extends AppCompatActivity {
                     Statement st = null;
                     ResultSet rs = null;
                     try {
-                        cn = DriverManager.getConnection(url, user, password);
+                        cn = DriverManager.getConnection(MainActivity.url, MainActivity.user, MainActivity.password);
                         st = cn.createStatement();
-                        rs = st.executeQuery("select distinct 表号 from ylb_data where 区名 = '" + Area + "' and 站名 = '"+ Station +"'");
+                        rs = st.executeQuery("select distinct 表号 from ylb_data where 区名 = '" + Area + "' and 站名 = '" + Station + "'");
                         while (rs.next()) {
                             addtext.add(rs.getString("表号"));
                         }
@@ -193,32 +197,32 @@ public class NormalLoginActivity extends AppCompatActivity {
                     } catch (SQLException e) {
                         e.printStackTrace();
                         System.out.println("查找表号失败");
-                    }finally {
+                    } finally {
                         //释放资源(按顺序从后到前:查询结果集-数据库操作对象-连接对象)
-                        if (rs != null){
-                            try{
+                        if (rs != null) {
+                            try {
                                 rs.close();
-                            }catch(SQLException e){
+                            } catch (SQLException e) {
                                 e.printStackTrace();
                             }
                         }
-                        if (st != null){
-                            try{
+                        if (st != null) {
+                            try {
                                 st.close();
-                            }catch(SQLException e){
+                            } catch (SQLException e) {
                                 e.printStackTrace();
                             }
                         }
-                        if (cn != null){
-                            try{
+                        if (cn != null) {
+                            try {
                                 cn.close();
-                            }catch(SQLException e){
+                            } catch (SQLException e) {
                                 e.printStackTrace();
                             }
                         }
                     }
                 }).start();
-                mHandler = new Handler(){
+                mHandler = new Handler() {
                     @Override
                     public void handleMessage(@NonNull Message msg) {
                         super.handleMessage(msg);
@@ -253,21 +257,18 @@ public class NormalLoginActivity extends AppCompatActivity {
 
         Button mBtnSearchId = findViewById(R.id.btn_SearchId);
         mBtnSearchId.setOnClickListener(view -> {
-            if(spinnerArea.getSelectedItem().toString().equals("请选择地区")){
-                Toast.makeText(NormalLoginActivity.this, "请选择地区", Toast.LENGTH_SHORT).show();
-            }else if(spinnerStation.getSelectedItem().toString().equals("请选择站点")){
-                Toast.makeText(NormalLoginActivity.this, "请选择站点", Toast.LENGTH_SHORT).show();
-            }else if(spinnerId.getSelectedItem().toString().equals("请选择表号")){
-                Toast.makeText(NormalLoginActivity.this, "请选择表号", Toast.LENGTH_SHORT).show();
-            }else{
-                Intent intent1 = new Intent(NormalLoginActivity.this,ListFileActivity.class);
-//                Bundle bundle1 = new Bundle();
-//                bundle1.putString("url",url);
-//                bundle1.putString("user", user);
-//                bundle1.putString("password", password);
-//                bundle1.putString("Id",Id);
-//                intent1.putExtras(bundle1);
-                startActivity(intent1);
+            if (spinnerArea.getSelectedItem().toString().equals("请选择地区")) {
+                Utils.showToastMsg(NormalLoginActivity.this, "请选择地区");
+            } else if (spinnerStation.getSelectedItem().toString().equals("请选择站点")) {
+                Utils.showToastMsg(NormalLoginActivity.this, "请选择站点");
+            } else if (spinnerId.getSelectedItem().toString().equals("请选择表号")) {
+                Utils.showToastMsg(NormalLoginActivity.this, "请选择表号");
+            } else {
+                Intent intent = new Intent(NormalLoginActivity.this, DisplayOnenetDataActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("Id", Id);
+                intent.putExtras(bundle);
+                startActivity(intent);
             }
         });
     }

@@ -1,5 +1,6 @@
 package com.whjstech.ylb;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
@@ -17,7 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class ListFileActivity extends AppCompatActivity {
-    private String rootPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/压力数据";
+    private String rootPath;
     private TextView pathTextView;
     private ListView fileListView;
     private List<MyFile> myFileList = new ArrayList<>();
@@ -27,6 +28,7 @@ public class ListFileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_file);
 
+        rootPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/压力数据";
         pathTextView = (TextView)findViewById(R.id.tv_path);
         fileListView = (ListView)findViewById(R.id.lv_file);
         getFileDir(rootPath);

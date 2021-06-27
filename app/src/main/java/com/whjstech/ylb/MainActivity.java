@@ -27,6 +27,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+
+import com.chinamobile.iot.onenet.OneNetApi;
+import com.whjstech.ylb.Preferences;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -44,17 +48,24 @@ public class MainActivity extends AppCompatActivity {
     private EditText mEtUserName;
     private EditText mEtPassWord;
     private CheckBox savePassword;
-    private final String url = "jdbc:mysql://rm-bp1h4c20303wf20fa0o.mysql.rds.aliyuncs.com/ylb?useSSL=true";
-    private String user;
-    private String password;
+    public static String url = "jdbc:mysql://rm-bp1h4c20303wf20fa0o.mysql.rds.aliyuncs.com/ylb?useSSL=true";
+    public static String user;
+    public static String password;
+    private ArrayList listArea = new ArrayList(Arrays.asList("请选择地区"));
     private String flag = "普通用户";
+    private Preferences mPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mayRequestPermissions();
+        mayRequestPermissions();//请求权限
+
+        mPreferences = Preferences.getInstance(this);
+        String apiKey = "mb8xiFTmjQHfnetcYlUWmAxRVPc=";
+        OneNetApi.setAppKey(apiKey.trim());//设置apiKey
+        mPreferences.putString(Preferences.API_KEY, apiKey);
 
         ImageView imageView = findViewById(R.id.iv_ylb);
         imageView.setImageResource(R.drawable.recorder);
@@ -116,9 +127,9 @@ public class MainActivity extends AppCompatActivity {
         mBtnLogin.setOnClickListener(v -> {
             if (!Utils.isFastClick()) {
                 if (user == null || user.equals("")) {
-                    Toast.makeText(MainActivity.this, "请输入用户名", Toast.LENGTH_SHORT).show();
+                    Utils.showToastMsg(MainActivity.this, "请输入用户名");
                 } else if (password == null || password.equals("")) {
-                    Toast.makeText(MainActivity.this, "请输入密码", Toast.LENGTH_SHORT).show();
+                    Utils.showToastMsg(MainActivity.this, "请输入密码");
                 } else if (flag.equals("普通用户")) {
                     ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
                     progressDialog.setMessage("登陆中...");
@@ -133,10 +144,9 @@ public class MainActivity extends AppCompatActivity {
                             e.printStackTrace();
                         } catch (SQLException e) {
                             e.printStackTrace();
-                            Looper.prepare();
-                            Toast.makeText(MainActivity.this, "账号或密码错误", Toast.LENGTH_SHORT).show();
                             progressDialog.dismiss();
-
+                            Looper.prepare();
+                            Utils.showToastMsg(MainActivity.this, "账号或密码错误");
                             mEtUserName.setText(null);
                             mEtPassWord.setText(null);
                             Looper.loop();
@@ -150,16 +160,11 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             }
                         }
+                        progressDialog.dismiss();
                         Intent intent = new Intent(MainActivity.this, NormalLoginActivity.class);
-                        Bundle bundle = new Bundle();
-                        bundle.putString("url", url);
-                        bundle.putString("user", user);
-                        bundle.putString("password", password);
-                        intent.putExtras(bundle);
                         startActivity(intent);
                         Looper.prepare();
-                        progressDialog.dismiss();
-                        Toast.makeText(MainActivity.this, "登陆成功", Toast.LENGTH_SHORT).show();
+                        Utils.showToastMsg(MainActivity.this, "登陆成功");
                         editor = pref.edit();
                         if (savePassword.isChecked()) {
                             editor.putBoolean("savePassword", true);
@@ -168,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             editor.clear();
                         }
-                        editor.commit();
+                        editor.apply();
                         Looper.loop();
                     }).start();
                 } else if (flag.equals("管理员用户")) {
@@ -197,7 +202,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    private void mayRequestPermissions(){
+
+    private void mayRequestPermissions() {
         int permissions = 0;
         if (Build.VERSION.SDK_INT >= 23) {
             for (String permission : permissionsArray) {
@@ -206,11 +212,9 @@ public class MainActivity extends AppCompatActivity {
                     permissions++;
                 }
             }
-            if(permissions != 0)
-            {
+            if (permissions != 0) {
                 ActivityCompat.requestPermissions(this, permissionsList.toArray(new String[permissionsList.size()]), 1);
             }
-
         }
     }
 }
